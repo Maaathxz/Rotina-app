@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar arquivos do repositório
+      - name: Baixar projeto
         uses: actions/checkout@v4
 
       - name: Encontrar e extrair ZIP
@@ -21,29 +21,44 @@ jobs:
           ZIP=$(find . -maxdepth 1 -type f -name "*.zip" | head -n 1)
 
           if [ -z "$ZIP" ]; then
-            echo "ERRO: nenhum arquivo ZIP encontrado."
+            echo "ERRO: nenhum ZIP encontrado na raiz."
             exit 1
           fi
 
           echo "ZIP encontrado: $ZIP"
           unzip -o "$ZIP" -d .
 
+      - name: Verificar estrutura
+        shell: bash
+        run: |
+          echo "Conteúdo do projeto:"
+          ls -la MinhaRotinaAndroid
+          echo "--------------------------------"
+          echo "settings.gradle:"
+          ls -l MinhaRotinaAndroid/settings.gradle
+          echo "--------------------------------"
+          echo "app:"
+          ls -la MinhaRotinaAndroid/app
+
       - name: Configurar Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: '8.9'
 
       - name: Compilar APK
         shell: bash
         run: |
           cd MinhaRotinaAndroid
-          gradle assembleDebug --stacktrace
+          echo "Estou em:"
+          pwd
+          echo "Compilando..."
+          gradle assembleDebug --stacktrace --info
 
       - name: Disponibilizar APK
         uses: actions/upload-artifact@v4
